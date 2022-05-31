@@ -20,52 +20,30 @@ router.get("/api/find/:user", async (req, res) => {
   }
 });
 
-//       נתיב להוספת משתמשים 
+//       נתיב להוספת משתמשים או משימות
 
-/*router.post("/api/create/:user", async (req, res) => {
+router.post("/api/create/:type", async (req, res) => {
   try {
-    ///console.log(req.body);
-    const find =
-      req.params.user === "user" ? userModel : "task" ? taskModel : null;
-      console.log(find);
-    const findModel =
-      req.params.user === "user" ? taskModel : "task" ? userModel : null;
-      console.log(findModel);
-    const findUser =
-      req.params.user === "user" ? users : "task" ? task : null;
-      console.log(findUser);
-    const users = new find(req.body);
-    await users.save();
-    const addTask = await findModel.find({id:findUser.task})
-    console.log(addTask[0].users);
-    console.log(findUser.id);
-    for(arr of addTask){
-        //console.log(arr.users);
-        const a= await findModel.findOneAndUpdate({findUser:arr.findUser},{findUser:[...arr.findUser,users.id]})
-        console.log(a);
+    const type = req.params.type;
+    const find = type === "user" ? userModel : "task" ? taskModel : null;
+    const findModel = type === "user" ? taskModel : "task" ? userModel : null;
+    const newUser = new find(req.body);
+    await newUser.save();
+    const findUsers = type === "user" ? "users" : "task" ? "task" : null;
+    const findTask = type === "user" ? "task" : "task" ? "users" : null;
+    const addTask = await findModel.find({ id: newUser[findTask] });
+    for (arr of addTask) {
+      const addNew = await findModel.findOneAndUpdate(
+        { [findUsers]: arr[findUsers] },
+        { [findUsers]: [...arr[findUsers], parseInt(newUser.id)] }
+      );
     }
-    //console.log(a);
-    res.send('users');
+    res.send(newUser);
   } catch (error) {
     res.send(error);
   }
-});*/
-router.post("/api/create/user", async (req, res) => {
-    try {
-      const users = new userModel(req.body);
-      await users.save();
-      const addTask = await taskModel.find({id:users.task})
-      for(arr of addTask){
-          const a= await taskModel.findOneAndUpdate({users:arr.users},{users:[...arr.users,users.id]})
-          console.log(a);
-      }
-      res.send('users');
-    } catch (error) {
-      res.send(error);
-    }
-  });
-  
-//    ---להכניס כפרמטר לנתיב הבא ---נתיב למחיקת המשתמש מהמשימות
+});
+
 
 router.get("/api/deleteUser/:id", async (req, res) => {
   try {
@@ -83,7 +61,7 @@ router.get("/api/deleteUser/:id", async (req, res) => {
         { users: del }
       );
     }
-    await userModel.findOneAndDelete({id:id})
+    await userModel.findOneAndDelete({ id: id });
     res.send(newarray);
   } catch (error) {
     res.send(error);
@@ -92,25 +70,17 @@ router.get("/api/deleteUser/:id", async (req, res) => {
 
 //     נתיב שמציג את כל הנתונים של המשימות של המשתמש ולהיפך- את כל הנתונים של המשתמשי במשימה
 
-router.get("/api/findbyid/:user/:id", async (req, res) => {
+router.get("/api/findbyid/:type/:id", async (req, res) => {
   try {
     console.log(req.params);
-    const { user, id } = req.params;
-    console.log(user);
-    console.log(id);
-    if (user === "user") {
-      const findById = await userModel.find({ id: id });
-      const newarray = await taskModel.find({ id: findById[0].task });
-      console.log(newarray);
-      res.send(newarray);
-    }
-    if (user === "task") {
-      const findById = await taskModel.find({ id: id });
-      console.log(findById);
-      const newarray = await userModel.find({ id: findById[0].users });
-      console.log(newarray);
-      res.send(newarray);
-    }
+    const { type, id } = req.params;
+    const findModel = type === "user" ? userModel : "task" ? taskModel : null;
+    const findType = type === "user" ? taskModel : "task" ? userModel : null;
+    const findUser = type === "user" ? "task" : "task" ? "users" : null;
+    const findById = await findModel.find({ id: id });
+    const newarray = await findType.find({ id: findById[0][findUser] });
+    console.log(newarray);
+    res.send(newarray);
   } catch (error) {
     res.send(error);
   }
@@ -118,27 +88,21 @@ router.get("/api/findbyid/:user/:id", async (req, res) => {
 
 //     נתיב לעדכון פרטי משתמש
 
-router.post("/api/user/update/:user", async (req, res) => {
+router.post("/api/update/:type/:id", async (req, res) => {
   try {
-    const { user } = req.params;
-    const updateUser = await userModel.findOneAndUpdate(
-      { users: user },
-      {
-        users: req.body.users,
-        id: req.body.id,
-        email: req.body.email,
-        password: req.body.password,
-        age: req.body.age,
-        task: req.body.task,
-      }
-    );
+    const { id } = req.params;
+    console.log(id);
+    const findModel =
+      req.params.type === "user" ? userModel : "task" ? taskModel : null;
+    const updateUser = await findModel
+      .find({ id: id })
+      .findOneAndUpdate({ ...req.body });
     console.log(updateUser);
     res.send(updateUser);
   } catch (error) {
     res.send(error);
   }
 });
-
 
 //    נתיב שבודק האם המשתמש עושה משימה זו, ואם לא- מוסיף לרשימה
 
@@ -155,7 +119,7 @@ router.get("/api/examination/:iduser/:idtask", async (req, res) => {
           { task: arrTask },
           { task: [...arrTask, idtask] }
         ));
-    res.send('Mission successfully added');
+    res.send("Mission successfully added");
   } catch (error) {
     res.send(error);
   }
