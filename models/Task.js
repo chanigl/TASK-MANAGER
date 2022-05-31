@@ -13,12 +13,11 @@ const taskSchema = new mongoose.Schema({
     id:{
         type:Number,
         required:true,
-       // unique:true
+        unique:true
     },
     users: 
     {
         type:[Number],
-        //toString:true,
         default:[]
         
     }

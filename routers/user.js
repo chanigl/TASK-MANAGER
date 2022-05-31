@@ -13,14 +13,13 @@ router.get("/api/find/:user", async (req, res) => {
     const find =
       req.params.user === "user" ? userModel : "task" ? taskModel : null;
     const users = await find.find({});
-    console.log(users);
     res.send(users);
   } catch (error) {
     res.send(error);
   }
 });
 
-//       נתיב להוספת משתמשים או משימות
+//       נתיב להוספת משתמשים   /   משימות
 
 router.post("/api/create/:type", async (req, res) => {
   try {
@@ -44,12 +43,11 @@ router.post("/api/create/:type", async (req, res) => {
   }
 });
 
+///     נתיב למחיקת משתמש ומחיקתו מרשימת המשימות
 
 router.get("/api/deleteUser/:id", async (req, res) => {
   try {
-    console.log(req.params);
     const { id } = req.params;
-    console.log(id);
     const findById = await userModel.find({ id: id });
     const newarray = await taskModel.find({ id: findById[0].task });
     for (arr of newarray) {
@@ -72,32 +70,28 @@ router.get("/api/deleteUser/:id", async (req, res) => {
 
 router.get("/api/findbyid/:type/:id", async (req, res) => {
   try {
-    console.log(req.params);
     const { type, id } = req.params;
     const findModel = type === "user" ? userModel : "task" ? taskModel : null;
     const findType = type === "user" ? taskModel : "task" ? userModel : null;
     const findUser = type === "user" ? "task" : "task" ? "users" : null;
     const findById = await findModel.find({ id: id });
     const newarray = await findType.find({ id: findById[0][findUser] });
-    console.log(newarray);
     res.send(newarray);
   } catch (error) {
     res.send(error);
   }
 });
 
-//     נתיב לעדכון פרטי משתמש
+//      / נתיב לעדכון פרטי משתמש  / משימה
 
 router.post("/api/update/:type/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
     const findModel =
       req.params.type === "user" ? userModel : "task" ? taskModel : null;
     const updateUser = await findModel
       .find({ id: id })
       .findOneAndUpdate({ ...req.body });
-    console.log(updateUser);
     res.send(updateUser);
   } catch (error) {
     res.send(error);

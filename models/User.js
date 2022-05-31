@@ -41,9 +41,7 @@ const userSchema = new mongoose.Schema({
   task:
   {
     type: [Number],
-    //toString:true,
     default: [],
-    unique:true
   }
 });
 

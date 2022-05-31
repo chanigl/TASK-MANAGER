@@ -14,8 +14,6 @@ const router = new express.Router()
 router.get("/api/deletetask/:id", async (req, res) => {
     try {
       console.log(req.params);
-      const { id } = req.params;
-      console.log(id);
       const findById = await taskModel.find({ id: id });
       const newarray = await userModel.find({ id: findById[0].users });
       for (arr of newarray) {
